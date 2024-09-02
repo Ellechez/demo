@@ -3,6 +3,7 @@ package com.task04;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.syndicate.deployment.annotations.events.SqsTriggerEventSource;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
@@ -27,18 +28,15 @@ import java.util.List;
 		name = "async_queue",
 		resourceType = ResourceType.SQS_QUEUE
 )
-public class SqsHandler implements RequestHandler<SQSEvent, List<String>> {
 
-	@Override
-	public List<String> handleRequest(SQSEvent sqsEvent, Context context) {
-		LambdaLogger logger = context.getLogger();
-		logger.log("EVENT TYPE" + sqsEvent.getClass().toString());
-		List<String> msg = new ArrayList<>();
-
-		for (SQSEvent.SQSMessage m : sqsEvent.getRecords()) {
-			logger.log("sqs message " + m.getBody());
-			msg.add(m.getBody());
-		}
-		return msg;
+public class SqsHandler implements RequestHandler<SQSEvent, APIGatewayV2HTTPResponse> {
+	public APIGatewayV2HTTPResponse handleRequest(SQSEvent event, Context context) {
+		event.getRecords().forEach(message -> context.getLogger().log(message.getBody()));
+		String okMessage = "{" + "         \"statusCode\": 200,"
+				+ "         \"message\": \"Hello from Lambda\"" + "     }";
+		return APIGatewayV2HTTPResponse.builder()
+		.withBody(okMessage)
+		.withStatusCode(200)
+		.build();
 	}
 }
