@@ -29,6 +29,14 @@
       "AWSLambdaSQSQueueExecutionRole"
     ],
     "principal_service": "lambda",
+    "custom_policies": [],
+    "resource_type": "iam_role"
+  },
+  "sns_handler-role": {
+    "predefined_policies": [
+      "AmazonSNSRole"
+    ],
+    "principal_service": "lambda",
     "custom_policies": [
       "lambda-basic-execution"
     ],
@@ -37,7 +45,8 @@
   "async_queue": {
     "resource_type": "sqs_queue",
     "fifo_queue": false,
-    "visibility_timeout": 30,
+    "region": "eu-central-1",
+    "visibility_timeout": 300,
     "delay_seconds": 0,
     "maximum_message_size": 1024,
     "message_retention_period": 60,
@@ -45,16 +54,6 @@
     "policy": {},
     "redrive_policy": {},
     "content_based_deduplication": false
-  },
-  "sns_handler-role": {
-    "predefined_policies": [
-      "AmazonSNSFullAccess"
-    ],
-    "principal_service": "lambda",
-    "custom_policies": [
-      "lambda-basic-execution"
-    ],
-    "resource_type": "iam_role"
   },
   "lambda_topic": {
     "resource_type": "sns_topic",
