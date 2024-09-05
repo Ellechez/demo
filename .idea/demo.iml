@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/task02/jsrc/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/task04/jsrc/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/task05/jsrc/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/task06/jsrc/main/java" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -25,5 +26,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-lambda-java-events:3.10.0" level="project" />
   </component>
 </module>
