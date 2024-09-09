@@ -16,42 +16,52 @@ import com.syndicate.deployment.model.lambda.url.InvokeMode;
 import java.util.Map;
 import java.util.function.Function;
 
-@LambdaHandler(
-		lambdaName = "api_handler",
+@LambdaHandler(lambdaName = "api_handler",
 		roleName = "api_handler-role",
 		isPublishVersion = false,
-		layers = "open-meteo",
+		runtime = DeploymentRuntime.JAVA17,
+		layers = {"open-apisdk-layer"},
 		logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
-
 )
 @LambdaLayer(
-		layerName = "open-meteo",
-		libraries = "lib/open-meteo-1.0.jar",
-		runtime = DeploymentRuntime.JAVA11,
+		layerName = "open-apisdk-layer",
+		runtime = DeploymentRuntime.JAVA17,
+		libraries = {"lib/open-meteo-1.0.jar"},
 		artifactExtension = ArtifactExtension.ZIP
 )
 @LambdaUrlConfig(
 		authType = AuthType.NONE,
 		invokeMode = InvokeMode.BUFFERED
 )
-
 public class ApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, String> {
-	private OpenAPISDK openapi = new OpenAPISDK();
+	private final Map<Key, Function<APIGatewayV2HTTPEvent, String>> routeHandlers =
+			Map.of(new Key("GET", "/weather"), this::getForecast);
 	private Key key;
-	private final Map<Key, String> routeHandlers =
-			Map.of(new Key("GET", "/weather"), openapi.getForecast());
 
 	@Override
 	public String handleRequest(APIGatewayV2HTTPEvent requestEvent, Context context) {
-		key = new Key(requestEvent.getRequestContext().getHttp().getMethod(),
-				requestEvent.getRequestContext().getHttp().getPath());
-		return this.routeHandlers.getOrDefault(key, badResponse());
+		key = new Key(getMethod(requestEvent), getPath(requestEvent));
+		return routeHandlers.getOrDefault(key, this::errorResp).apply(requestEvent);
 	}
 
-	private String badResponse() {
+	private String errorResp(APIGatewayV2HTTPEvent apiGatewayV2HTTPEvent) {
 		return "{" +
 				"\"statusCode\": 404," +
 				"\"message\": \"Bad request syntax or unsupported method\"" +
 				"}";
 	}
+
+	private String getMethod(APIGatewayV2HTTPEvent requestEvent) {
+		return requestEvent.getRequestContext().getHttp().getMethod();
+	}
+
+	private String getPath(APIGatewayV2HTTPEvent requestEvent) {
+		return requestEvent.getRequestContext().getHttp().getPath();
+	}
+
+	private String getForecast(APIGatewayV2HTTPEvent apiGatewayV2HTTPEvent) {
+		OpenAPISDK openapi = new OpenAPISDK();
+		return openapi.getForecast();
+	}
+
 }
