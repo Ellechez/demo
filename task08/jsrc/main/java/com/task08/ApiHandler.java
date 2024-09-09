@@ -33,12 +33,11 @@ import java.util.Map;
 		authType = AuthType.NONE,
 		invokeMode = InvokeMode.BUFFERED
 )
-public class ApiHandler implements RequestHandler<Map<String, Object>, String> {
-	public String handleRequest(Map<String, Object> request, Context context) {
+public class ApiHandler implements RequestHandler<Object, String> {
+	public String handleRequest(Object request, Context context) {
 		OpenMetroClient client = new OpenMetroClient();
 		try {
-			String weatherForecast = client.getWeatherForecast();
-			return weatherForecast;
+			return client.getWeatherForecast().toString();
 		} catch (Exception e) {
 			return e.getMessage();
 		}
