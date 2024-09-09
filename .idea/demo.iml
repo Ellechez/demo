@@ -9,6 +9,7 @@
       <sourceFolder url="file://$MODULE_DIR$/task06/jsrc/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/task07/jsrc/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/task08/jsrc/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/task09/jsrc/main/java" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -68,5 +69,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="Maven: com.amazonaws:aws-lambda-java-events:3.13.0" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-dynamodb:1.12.771" level="project" />
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk-core:1.12.771" level="project" />
   </component>
 </module>
