@@ -36,7 +36,7 @@
             <artifactId>weather-sdk</artifactId>
             <version>1.0.0</version>
             <scope>system</scope>
-            <systemPath>${basedir}/lib/open-meteo-1.0.jar</systemPath>
+            <systemPath>${pom.basedir}/lib/open-meteo-1.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
