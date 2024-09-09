@@ -67,5 +67,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="Maven: com.amazonaws:aws-lambda-java-events:3.13.0" level="project" />
   </component>
 </module>
