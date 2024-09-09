@@ -24,7 +24,7 @@ import java.util.Map;
 )
 @LambdaLayer(
 		layerName = "openmetro-layer",
-		libraries = {"lib/task08-1.0.0.jar"},
+		libraries = {"lib/open-meteo-1.0.jar"},
 		runtime = DeploymentRuntime.JAVA11,
 		architectures = {Architecture.ARM64},
 		artifactExtension = ArtifactExtension.ZIP
