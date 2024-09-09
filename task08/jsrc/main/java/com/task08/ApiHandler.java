@@ -19,13 +19,13 @@ import java.util.function.Function;
 @LambdaHandler(lambdaName = "api_handler",
 		roleName = "api_handler-role",
 		isPublishVersion = false,
-		runtime = DeploymentRuntime.JAVA17,
+		runtime = DeploymentRuntime.JAVA11,
 		layers = {"open-apisdk-layer"},
 		logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
 )
 @LambdaLayer(
 		layerName = "open-apisdk-layer",
-		runtime = DeploymentRuntime.JAVA17,
+		runtime = DeploymentRuntime.JAVA11,
 		libraries = {"lib/open-meteo-1.0.jar"},
 		artifactExtension = ArtifactExtension.ZIP
 )
