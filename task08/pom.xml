@@ -32,7 +32,7 @@
             <version>${syndicate.java.plugin.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.epam</groupId>
+            <groupId>com.task08</groupId>
             <artifactId>open-meteo</artifactId>
             <version>1.0</version>
             <scope>system</scope>
