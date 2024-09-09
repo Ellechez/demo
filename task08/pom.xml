@@ -33,10 +33,10 @@
         </dependency>
         <dependency>
             <groupId>com.task08</groupId>
-            <artifactId>open-meteo</artifactId>
-            <version>1.0</version>
+            <artifactId>weather-sdk</artifactId>
+            <version>1.0.0</version>
             <scope>system</scope>
-            <systemPath>${pom.basedir}/lib/open-meteo-1.0.jar</systemPath>
+            <systemPath>${basedir}/lib/open-meteo-1.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
