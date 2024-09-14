@@ -18,80 +18,7 @@ public class AuthService {
     private String email;
     private String password;
 
-    /*public APIGatewayProxyResponseEvent signUp(APIGatewayProxyRequestEvent request) {
-        try {
-            JSONObject json = new JSONObject(request.getBody());
-            email = json.getString("email");
-            password = json.getString("password");
-            String regexEmail = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
-            String regexPassword = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[\\$%\\^_\\-\\*])[A-Za-z\\d\\$%\\^_\\-\\*]{12,}$";
-
-            if (!json.getString("email").matches(regexEmail)) {
-                return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Invalid email");
-            }
-            if (!json.getString("password").matches(regexPassword)) {
-                return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Invalid password");
-            }
-
-            AdminCreateUserRequest adminCreateUserRequest = AdminCreateUserRequest.builder()
-                    .userPoolId(cognitoId)
-                    .username(email)
-                    .userAttributes(
-                            AttributeType.builder().name("given_name").value(json.getString("firstName")).build(),
-                            AttributeType.builder().name("family_name").value(json.getString("lastName")).build(),
-                            AttributeType.builder().name("email").value(email).build()
-                    )
-                    .temporaryPassword(password)
-                    .build();
-            identityProviderClient.adminCreateUser(adminCreateUserRequest);
-
-            AdminSetUserPasswordRequest adminSetUserPasswordRequest = AdminSetUserPasswordRequest.builder()
-                    .userPoolId(cognitoId)
-                    .username(email)
-                    .password(password)
-                    .permanent(true)
-                    .build();
-            identityProviderClient.adminSetUserPassword(adminSetUserPasswordRequest);
-
-            return new APIGatewayProxyResponseEvent()
-                    .withStatusCode(200)
-                    .withBody(new JSONObject()
-                    .put("message", "User has been successfully signed up.")
-                    .toString());
-
-        } catch (Exception e) {
-            return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Error: " + e.getMessage());
-        }
-    }
-
-    public APIGatewayProxyResponseEvent signIn(APIGatewayProxyRequestEvent request) {
-        try {
-            JSONObject json = new JSONObject(request.getBody());
-            email = json.getString("email");
-            password = json.getString("password");
-
-            AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
-                    .authFlow(AuthFlowType.ADMIN_NO_SRP_AUTH)
-                    .userPoolId(cognitoId)
-                    .clientId(clientId)
-                    .authParameters(Map.of("USERNAME", email, "PASSWORD", password))
-                    .build();
-
-            return new APIGatewayProxyResponseEvent()
-                    .withStatusCode(200)
-                    .withBody(new JSONObject()
-                            .put("accessToken", identityProviderClient
-                                    .adminInitiateAuth(authRequest)
-                                    .authenticationResult()
-                                    .idToken())
-                            .toString());
-
-        } catch (Exception e) {
-            return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Error: " + e.getMessage());
-        }
-    }*/
-
-    private APIGatewayProxyResponseEvent signUp(APIGatewayProxyRequestEvent request) {
+    public APIGatewayProxyResponseEvent signUp(APIGatewayProxyRequestEvent request) {
         try {
             JSONObject json = new JSONObject(request.getBody());
             email = json.getString("email");
@@ -118,7 +45,7 @@ public class AuthService {
         }
     }
 
-    private APIGatewayProxyResponseEvent signIn(APIGatewayProxyRequestEvent request) {
+    public APIGatewayProxyResponseEvent signIn(APIGatewayProxyRequestEvent request) {
         JSONObject json = new JSONObject(request.getBody());
         email = json.getString("email");
         password = json.getString("password");
@@ -149,7 +76,7 @@ public class AuthService {
                 System.out.println("Challenge passed: " + adminRespondToAuthChallengeResponse.authenticationResult().idToken());
                 authResult = adminRespondToAuthChallengeResponse.authenticationResult();
             }
-            // At this point, the user is successfully authenticated, and you can access JWT tokens:
+
             return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(authResult.idToken());
         } catch (Exception e) {
             System.err.println("Error while signing in user " + e.getMessage());
