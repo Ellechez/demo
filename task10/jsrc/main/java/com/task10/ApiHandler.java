@@ -40,7 +40,6 @@ public class ApiHandler implements RequestHandler<ApiRequest, APIGatewayV2HTTPRe
 	private static Regions REGION = Regions.EU_CENTRAL_1;
 	@Override
 	public APIGatewayV2HTTPResponse handleRequest(ApiRequest requestEvent, Context context) {
-		System.out.println("API request:" + requestEvent);
 		 switch(requestEvent.getPath()) {
 			case "/signup" :
 				return signUpUser(requestEvent, getUserPoolId());
@@ -152,7 +151,7 @@ public class ApiHandler implements RequestHandler<ApiRequest, APIGatewayV2HTTPRe
 				attributesMap.put("minOrder", new AttributeValue().withN(String.valueOf(table.getMinOrder())));
 			}
 			amazonDynamoDB.putItem(System.getenv("tables_table"), attributesMap);
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withBody(String.valueOf(table.getId())).build();
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withBody("\"id\":" + attributesMap.get("id").getN()).build();
 		} catch(Exception e) {
 			System.err.println("Error while persisting table " + e.getMessage());
 			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withBody("ERROR " + e.getMessage()).build();
