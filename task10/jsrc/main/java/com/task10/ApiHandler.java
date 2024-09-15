@@ -15,6 +15,7 @@ import com.syndicate.deployment.annotations.environment.EnvironmentVariables;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
 import com.syndicate.deployment.model.DeploymentRuntime;
 import com.syndicate.deployment.model.RetentionSetting;
+import org.json.JSONObject;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
@@ -152,7 +153,8 @@ public class ApiHandler implements RequestHandler<ApiRequest, APIGatewayV2HTTPRe
 				attributesMap.put("minOrder", new AttributeValue().withN(String.valueOf(table.getMinOrder())));
 			}
 			amazonDynamoDB.putItem(System.getenv("tables_table"), attributesMap);
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withBody(String.valueOf(table.getId())).build();
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withBody(new JSONObject()
+					.put("id", String.valueOf(table.getId())).toString()).build();
 		} catch(Exception e) {
 			System.err.println("Error while persisting table " + e.getMessage());
 			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withBody("ERROR " + e.getMessage()).build();
