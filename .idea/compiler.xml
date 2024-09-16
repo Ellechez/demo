@@ -19,6 +19,7 @@
       <module name="task08" target="11" />
       <module name="task09" target="11" />
       <module name="task10" target="16" />
+      <module name="task11OLD" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>

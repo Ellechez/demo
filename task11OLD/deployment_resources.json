@@ -71,9 +71,11 @@
     "username_attributes": [
       "email"
     ],
-    "custom_attributes": [],
+    "custom_attributes": [
+
+    ],
     "client": {
-      "client_name": "api_client_syndicate"
+      "client_name" : "api_client_syndicate"
     }
   },
   "Tables": {
@@ -93,37 +95,5 @@
     "write_capacity": 1,
     "global_indexes": [],
     "autoscaling": []
-  },
-  "api-ui-hoster": {
-    "resource_type": "s3_bucket",
-    "acl": "public-read",
-    "cors": [],
-    "policy": {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Sid": "PublicReadGetObject",
-          "Effect": "Allow",
-          "Principal": "*",
-          "Action": [
-            "s3:GetObject"
-          ],
-          "Resource": [
-            "arn:aws:s3:::{bucket_name}/*"
-          ]
-        }
-      ]
-    },
-    "public_access_block": {
-      "block_public_acls": false,
-      "ignore_public_acls": false,
-      "block_public_policy": false,
-      "restrict_public_buckets": false
-    },
-    "website_hosting": {
-      "enabled": true,
-      "index_document": "index.html",
-      "error_document": "error.html"
-    }
   }
 }

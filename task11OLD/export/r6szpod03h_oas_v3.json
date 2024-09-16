@@ -17,8 +17,6 @@
   "paths": {
     "/reservations": {
       "get": {
-        "description": "Path /reservations, method GET",
-        "summary": "Path /reservations, method GET",
         "responses": {
           "400": {
             "description": "400 response",
@@ -49,7 +47,7 @@
         ],
         "x-amazon-apigateway-integration": {
           "httpMethod": "POST",
-          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:905418349556:function:api_handler/invocations",
+          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:196241772369:function:api_handler/invocations",
           "responses": {
             "default": {
               "statusCode": "200",
@@ -69,8 +67,6 @@
         }
       },
       "post": {
-        "description": "Path /reservations, method POST",
-        "summary": "Path /reservations, method POST",
         "requestBody": {
           "content": {
             "application/json": {
@@ -111,7 +107,7 @@
         ],
         "x-amazon-apigateway-integration": {
           "httpMethod": "POST",
-          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:905418349556:function:api_handler/invocations",
+          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:196241772369:function:api_handler/invocations",
           "responses": {
             "default": {
               "statusCode": "200",
@@ -181,8 +177,6 @@
     },
     "/tables": {
       "get": {
-        "description": "Path /tables, method GET",
-        "summary": "Path /tables, method GET",
         "responses": {
           "400": {
             "description": "400 response",
@@ -213,7 +207,7 @@
         ],
         "x-amazon-apigateway-integration": {
           "httpMethod": "POST",
-          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:905418349556:function:api_handler/invocations",
+          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:196241772369:function:api_handler/invocations",
           "responses": {
             "default": {
               "statusCode": "200",
@@ -233,8 +227,6 @@
         }
       },
       "post": {
-        "description": "Path /tables, method POST",
-        "summary": "Path /reservations, method POST",
         "requestBody": {
           "content": {
             "application/json": {
@@ -275,7 +267,7 @@
         ],
         "x-amazon-apigateway-integration": {
           "httpMethod": "POST",
-          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:905418349556:function:api_handler/invocations",
+          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:196241772369:function:api_handler/invocations",
           "responses": {
             "default": {
               "statusCode": "200",
@@ -345,8 +337,6 @@
     },
     "/signin": {
       "post": {
-        "description": "Path /signin, method POST",
-        "summary": "Path /signin, method POST",
         "requestBody": {
           "content": {
             "application/json": {
@@ -382,7 +372,7 @@
         },
         "x-amazon-apigateway-integration": {
           "httpMethod": "POST",
-          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:905418349556:function:api_handler/invocations",
+          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:196241772369:function:api_handler/invocations",
           "responses": {
             "default": {
               "statusCode": "200",
@@ -452,8 +442,6 @@
     },
     "/signup": {
       "post": {
-        "description": "Path /signup, method POST",
-        "summary": "Path /signup, method POST",
         "requestBody": {
           "content": {
             "application/json": {
@@ -483,7 +471,7 @@
         },
         "x-amazon-apigateway-integration": {
           "httpMethod": "POST",
-          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:905418349556:function:api_handler/invocations",
+          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:196241772369:function:api_handler/invocations",
           "responses": {
             "default": {
               "statusCode": "200",
@@ -553,8 +541,6 @@
     },
     "/tables/{tableId}": {
       "get": {
-        "description": "Path /tables/{tableId}, method GET",
-        "summary": "Path /tables/{tableId}, method GET",
         "parameters": [
           {
             "name": "tableId",
@@ -595,7 +581,7 @@
         ],
         "x-amazon-apigateway-integration": {
           "httpMethod": "POST",
-          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:905418349556:function:api_handler/invocations",
+          "uri": "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:196241772369:function:api_handler/invocations",
           "responses": {
             "default": {
               "statusCode": "200",
@@ -915,7 +901,9 @@
         "in": "header",
         "x-amazon-apigateway-authtype": "cognito_user_pools",
         "x-amazon-apigateway-authorizer": {
-          "x-syndicate-cognito-userpool-names": ["${booking_userpool}"],
+          "providerARNs": [
+            "arn:aws:cognito-idp:eu-central-1:905418349556:userpool/eu-central-1_yyxWkec3c"
+          ],
           "type": "cognito_user_pools"
         }
       }
