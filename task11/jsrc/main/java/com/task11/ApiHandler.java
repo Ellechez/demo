@@ -31,18 +31,16 @@ import java.util.*;
 		@EnvironmentVariable(key = "tables_table", value = "${tables_table}"),
 		@EnvironmentVariable(key = "reservations_table", value = "${reservations_table}"),
 		@EnvironmentVariable(key = "booking_userpool", value = "${booking_userpool}")})
-public class ApiHandler implements RequestHandler<ApiRequest, APIGatewayV2HTTPResponse> {
+public class ApiHandler implements RequestHandler<ApiHandler.APIRequest, APIGatewayV2HTTPResponse> {
 
 	private final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-	private final AmazonDynamoDB amazonDynamoDB =
-			AmazonDynamoDBClientBuilder.standard().withRegion(System.getenv("region")).build();
+	private final AmazonDynamoDB amazonDynamoDB = AmazonDynamoDBClientBuilder.standard().withRegion(System.getenv("region")).build();
 
-	private final CognitoIdentityProviderClient cognitoIdentityProviderClient =
-			CognitoIdentityProviderClient.builder().region(Region.of(System.getenv("region"))).build();
+	private final CognitoIdentityProviderClient cognitoIdentityProviderClient = CognitoIdentityProviderClient.builder().region(Region.of(System.getenv("region"))).build();
 
 	@Override
-	public APIGatewayV2HTTPResponse handleRequest(ApiRequest requestEvent, Context context) {
+	public APIGatewayV2HTTPResponse handleRequest(APIRequest requestEvent, Context context) {
 		return switch(requestEvent.path()) {
 			case "/signup" -> {
 				var userPoolId = getUserPoolId();
@@ -76,13 +74,13 @@ public class ApiHandler implements RequestHandler<ApiRequest, APIGatewayV2HTTPRe
 		};
 	}
 
-	private Table createTableObject(ApiRequest apiRequest) {
+	private Table createTableObject(APIRequest apiRequest) {
 		return new Table(Integer.valueOf(apiRequest.body_json().get("id")), Integer.valueOf(apiRequest.body_json().get("number")),
 				Integer.valueOf(apiRequest.body_json().get("places")), Boolean.valueOf(apiRequest.body_json().get("isVip")),
 				Objects.nonNull(apiRequest.body_json().get("minOrder")) ? Integer.parseInt(apiRequest.body_json().get("minOrder")) : null);
 	}
 
-	private Reservation createReservationObject(ApiRequest apiRequest) {
+	private Reservation createReservationObject(APIRequest apiRequest) {
 		return new Reservation(Integer.valueOf(apiRequest.body_json().get("tableNumber")), apiRequest.body_json().get("clientName"),
 				apiRequest.body_json().get("phoneNumber"), apiRequest.body_json().get("date"),
 				apiRequest.body_json().get("slotTimeStart"), apiRequest.body_json().get("slotTimeEnd"));
@@ -100,51 +98,37 @@ public class ApiHandler implements RequestHandler<ApiRequest, APIGatewayV2HTTPRe
 	}
 
 	private String createClient(String userPoolId) {
-		return cognitoIdentityProviderClient
-				.createUserPoolClient(CreateUserPoolClientRequest
-						.builder()
-						.userPoolId(userPoolId)
-						.explicitAuthFlows(ExplicitAuthFlowsType.ALLOW_ADMIN_USER_PASSWORD_AUTH, ExplicitAuthFlowsType.ALLOW_REFRESH_TOKEN_AUTH)
-						.clientName("api_client")
-						.build())
-				.userPoolClient()
-				.clientId();
+		var result = cognitoIdentityProviderClient.createUserPoolClient(
+				CreateUserPoolClientRequest.builder().userPoolId(userPoolId)
+						.explicitAuthFlows(ExplicitAuthFlowsType.ALLOW_ADMIN_USER_PASSWORD_AUTH, ExplicitAuthFlowsType.ALLOW_REFRESH_TOKEN_AUTH).clientName("api_client").build());
+		return result.userPoolClient().clientId();
 	}
 
-	private APIGatewayV2HTTPResponse signUp(ApiRequest apiRequest, String userPoolId) {
+	private APIGatewayV2HTTPResponse signUp(APIRequest apiRequest, String userPoolId) {
 		try {
-			var attributes = new ArrayList<AttributeType>();
-			attributes.add(AttributeType.builder().name("email").value(apiRequest.body_json().get("email")).build());
-			var userRequest = AdminCreateUserRequest.builder()
+			var userAttributeList = new ArrayList<AttributeType>();
+			userAttributeList.add(AttributeType.builder().name("email").value(apiRequest.body_json().get("email")).build());
+			var adminCreateUserRequest = AdminCreateUserRequest.builder()
 					.temporaryPassword(apiRequest.body_json().get("password"))
 					.userPoolId(userPoolId)
 					.username(apiRequest.body_json().get("email"))
 					.messageAction(MessageActionType.SUPPRESS)
-					.userAttributes(attributes).build();
-			cognitoIdentityProviderClient.adminCreateUser(userRequest);
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withHeaders(createHeaders()).build();
+					.userAttributes(userAttributeList).build();
+			cognitoIdentityProviderClient.adminCreateUser(adminCreateUserRequest);
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).build();
 		} catch (CognitoIdentityProviderException e) {
 			System.err.println("Error while signing up user " + e.awsErrorDetails().errorMessage());
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withHeaders(createHeaders()).withBody("ERROR " + e.getMessage()).build();
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withBody("ERROR " + e.getMessage()).build();
 		}
 	}
 
-	private Map<String, String> createHeaders() {
-		var map = new HashMap<String, String>();
-		map.put("Access-Control-Allow-Headers", "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token");
-		map.put("Access-Control-Allow-Origin", "*");
-		map.put("Access-Control-Allow-Methods", "*");
-		map.put("Accept-Version", "*");
-		return map;
-	}
-
-	private APIGatewayV2HTTPResponse signIn(ApiRequest apiRequest, String userPoolId, String clientId) {
-
+	private APIGatewayV2HTTPResponse signIn(APIRequest apiRequest, String userPoolId, String clientId) {
 		var authRequest = AdminInitiateAuthRequest.builder()
 				.authFlow("ADMIN_USER_PASSWORD_AUTH")
 				.authParameters(Map.of(
 						"USERNAME", apiRequest.body_json().get("email"),
-						"PASSWORD", apiRequest.body_json().get("password")))
+						"PASSWORD", apiRequest.body_json().get("password")
+				))
 				.userPoolId(userPoolId)
 				.clientId(clientId)
 				.build();
@@ -163,56 +147,55 @@ public class ApiHandler implements RequestHandler<ApiRequest, APIGatewayV2HTTPRe
 										"USERNAME", apiRequest.body_json().get("email"))).build());
 				authResult = adminRespondToAuthChallengeResponse.authenticationResult();
 			}
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withHeaders(createHeaders()).withBody(authResult.idToken()).build();
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withBody(authResult.idToken()).build();
 		} catch (Exception e) {
 			System.err.println("Error while signing in user " + e.getMessage());
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withHeaders(createHeaders()).withBody("ERROR " + e.getMessage()).build();
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withBody("ERROR " + e.getMessage()).build();
 		}
 	}
 
 	private String getUserPoolId() {
-		var descriptionType = UserPoolDescriptionType.builder().id("test-id").build();
+		var userPoolDescriptionType = UserPoolDescriptionType.builder().id("test-id").build();
 		try {
 			var request = ListUserPoolsRequest.builder().maxResults(50).build();
 			var response = cognitoIdentityProviderClient.listUserPools(request);
-			descriptionType = response.userPools().stream().filter(
-					value -> value.name().equals(
-							System.getenv("booking_userpool"))).findFirst().orElse(descriptionType);
-			return descriptionType.id();
+			userPoolDescriptionType = response.userPools().stream().filter(value -> value.name().equals(System.getenv("booking_userpool")))
+					.findFirst().orElse(userPoolDescriptionType);
+			return userPoolDescriptionType.id();
 
 		} catch (CognitoIdentityProviderException e) {
 			System.err.println("Error while listing the user pools: " + e.awsErrorDetails().errorMessage());
 		}
-		return descriptionType.id();
+		return userPoolDescriptionType.id();
 	}
 
 	private APIGatewayV2HTTPResponse handleTable(Table table) {
 		try {
-			var attributes = new HashMap<String, AttributeValue>();
-			attributes.put("id", new AttributeValue().withN(String.valueOf(table.id())));
-			attributes.put("number", new AttributeValue().withN(String.valueOf(table.number())));
-			attributes.put("places", new AttributeValue().withN(String.valueOf(table.places())));
-			attributes.put("isVip", new AttributeValue().withBOOL(table.isVip()));
+			var attributesMap = new HashMap<String, AttributeValue>();
+			attributesMap.put("id", new AttributeValue().withN(String.valueOf(table.id())));
+			attributesMap.put("number", new AttributeValue().withN(String.valueOf(table.number())));
+			attributesMap.put("places", new AttributeValue().withN(String.valueOf(table.places())));
+			attributesMap.put("isVip", new AttributeValue().withBOOL(table.isVip()));
 			if (Objects.nonNull(table.minOrder())) {
-				attributes.put("minOrder", new AttributeValue().withN(String.valueOf(table.minOrder())));
+				attributesMap.put("minOrder", new AttributeValue().withN(String.valueOf(table.minOrder())));
 			}
-			amazonDynamoDB.putItem(System.getenv("tables_table"), attributes);
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withHeaders(createHeaders()).withBody(String.valueOf(table.id())).build();
+			amazonDynamoDB.putItem(System.getenv("tables_table"), attributesMap);
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withBody(String.valueOf(table.id())).build();
 		} catch(Exception e) {
 			System.err.println("Error while persisting table " + e.getMessage());
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withHeaders(createHeaders()).withBody("ERROR " + e.getMessage()).build();
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withBody("ERROR " + e.getMessage()).build();
 		}
 	}
 
 	private APIGatewayV2HTTPResponse scanTable() {
 		try {
-			var list = amazonDynamoDB.scan(new ScanRequest(System.getenv("tables_table")))
+			var tableList = amazonDynamoDB.scan(new ScanRequest(System.getenv("tables_table")))
 					.getItems().stream().map(this::createTableResponse).toList();
-			var apiResponse = new TableResponse(list);
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withHeaders(createHeaders()).withBody(objectMapper.writeValueAsString(apiResponse)).build();
+			var apiResponse = new TableResponse(tableList);
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withBody(objectMapper.writeValueAsString(apiResponse)).build();
 		} catch (Exception e) {
 			System.err.println("Error while scanning table " + e.getMessage());
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withHeaders(createHeaders()).withBody("ERROR " + e.getMessage()).build();
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withBody("ERROR " + e.getMessage()).build();
 		}
 	}
 
@@ -222,10 +205,10 @@ public class ApiHandler implements RequestHandler<ApiRequest, APIGatewayV2HTTPRe
 			attributesMap.put("id", new AttributeValue().withN(String.valueOf(tableId)));
 			var result = amazonDynamoDB.getItem(System.getenv("tables_table"), attributesMap).getItem();
 			var tableResult = createTableResponse(result);
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withHeaders(createHeaders()).withBody(objectMapper.writeValueAsString(tableResult)).build();
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withBody(objectMapper.writeValueAsString(tableResult)).build();
 		} catch (Exception e) {
 			System.err.println("Error while finding table " + e.getMessage());
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withHeaders(createHeaders()).withBody("ERROR " + e.getMessage()).build();
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withBody("ERROR " + e.getMessage()).build();
 		}
 	}
 
@@ -234,32 +217,32 @@ public class ApiHandler implements RequestHandler<ApiRequest, APIGatewayV2HTTPRe
 			var reservationList = amazonDynamoDB.scan(new ScanRequest(System.getenv("reservations_table")))
 					.getItems().stream().map(this::createReservationResponse).toList();
 			var apiResponse = new ReservationResponse(reservationList);
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withHeaders(createHeaders()).withBody(objectMapper.writeValueAsString(apiResponse)).build();
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withBody(objectMapper.writeValueAsString(apiResponse)).build();
 		} catch (Exception e) {
 			System.err.println("Error while scanning table " + e.getMessage());
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withHeaders(createHeaders()).withBody("ERROR " + e.getMessage()).build();
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withBody("ERROR " + e.getMessage()).build();
 		}
 	}
 
 	private APIGatewayV2HTTPResponse handleReservation(Reservation reservation) {
 		try {
 			if(checkTable(reservation) && checkReservation(reservation)) {
-				var attributes = new HashMap<String, AttributeValue>();
-				attributes.put("id", new AttributeValue(UUID.randomUUID().toString()));
-				attributes.put("tableNumber", new AttributeValue().withN(String.valueOf(reservation.tableNumber())));
-				attributes.put("clientName", new AttributeValue(String.valueOf(reservation.clientName())));
-				attributes.put("phoneNumber", new AttributeValue(String.valueOf(reservation.phoneNumber())));
-				attributes.put("date", new AttributeValue(reservation.date()));
-				attributes.put("slotTimeStart", new AttributeValue(String.valueOf(reservation.slotTimeStart())));
-				attributes.put("slotTimeEnd", new AttributeValue(String.valueOf(reservation.slotTimeEnd())));
-				amazonDynamoDB.putItem(System.getenv("reservations_table"), attributes);
-				return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withHeaders(createHeaders()).withBody(UUID.randomUUID().toString()).build();
+				var attributesMap = new HashMap<String, AttributeValue>();
+				attributesMap.put("id", new AttributeValue(UUID.randomUUID().toString()));
+				attributesMap.put("tableNumber", new AttributeValue().withN(String.valueOf(reservation.tableNumber())));
+				attributesMap.put("clientName", new AttributeValue(String.valueOf(reservation.clientName())));
+				attributesMap.put("phoneNumber", new AttributeValue(String.valueOf(reservation.phoneNumber())));
+				attributesMap.put("date", new AttributeValue(reservation.date()));
+				attributesMap.put("slotTimeStart", new AttributeValue(String.valueOf(reservation.slotTimeStart())));
+				attributesMap.put("slotTimeEnd", new AttributeValue(String.valueOf(reservation.slotTimeEnd())));
+				amazonDynamoDB.putItem(System.getenv("reservations_table"), attributesMap);
+				return APIGatewayV2HTTPResponse.builder().withStatusCode(200).withBody(UUID.randomUUID().toString()).build();
 			} else {
 				return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withBody("ERROR, there is already a reservation or the table does not exist").build();
 			}
 		} catch(Exception e) {
 			System.err.println("Error while persisting reservation " + e.getMessage());
-			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withHeaders(createHeaders()).withBody("ERROR " + e.getMessage()).build();
+			return APIGatewayV2HTTPResponse.builder().withStatusCode(400).withBody("ERROR " + e.getMessage()).build();
 		}
 	}
 
@@ -276,6 +259,28 @@ public class ApiHandler implements RequestHandler<ApiRequest, APIGatewayV2HTTPRe
 						value.tableNumber().equals(reservation.tableNumber()) && value.slotTimeStart().equals(reservation.slotTimeStart())
 								&& value.slotTimeEnd().equals(reservation.slotTimeEnd())).count();
 		return reservationList == 0;
+	}
+
+
+
+	public record APIRequest(String method, String path, String authorization_header, Map<String, String> body_json) {
+
+	}
+
+	public record Table(Number id, Number number, Number places, Boolean isVip, Number minOrder){
+
+	}
+
+	public record Reservation(Number tableNumber, String clientName, String phoneNumber, String date, String slotTimeStart, String slotTimeEnd) {
+
+	}
+
+	public record ReservationResponse(List<Reservation> reservations) {
+
+	}
+
+	public record TableResponse(List<Table> tables) {
+
 	}
 
 }
